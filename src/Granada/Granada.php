@@ -1,6 +1,7 @@
 <?php namespace Granada;
 
 use ArrayAccess;
+use BadMethodCallException;
 
    /**
     *
@@ -568,6 +569,26 @@ use ArrayAccess;
             if(function_exists('get_called_class')) {
                 $model = self::factory(get_called_class());
                 return call_user_func_array(array($model, $method), $parameters);
+            }
+        }
+
+        /**
+         * Allows us to call methods using camel case and remain
+         * backwards compatible.
+         *
+         * @param  string $method
+         * @param  array  $parameters
+         * @throws BadMethodCallException
+         * @return bool|Wrapper
+         */
+        public function __call($method, $parameters) {
+            $name = strtolower(preg_replace('/([a-z])([A-Z])/', '$1_$2', $method));
+
+            if(method_exists($this, $name)){
+                return call_user_func_array(array($this, $name), $parameters);
+            }
+            else {
+                throw new BadMethodCallException ("Method $name() does not exist in class " . get_class($this));
             }
         }
     }
