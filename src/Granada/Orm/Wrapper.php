@@ -286,6 +286,7 @@ class Wrapper extends ORM {
         return $output;
     }
 
+
     /**
      *
      * Overrides __call to check for filter_$method names defined
@@ -293,14 +294,26 @@ class Wrapper extends ORM {
      * public static function filter_{filtermethodname} and call it from a static call
      * ModelName::filtermethodname->......
      *
+     * This additionally allows us to call methods using camel case and remain
+     * backwards compatible.
+     *
+     * @param  string $method
+     * @param  array  $parameters
+     * @throws Exception
+     * @return bool|Wrapper
      */
-    public function __call($method, $parameters){
+    public function __call($method, $parameters) {
+        $name = strtolower(preg_replace('/([a-z])([A-Z])/', '$1_$2', $method));
+
         if(method_exists($this->_class_name,'filter_'.$method)){
             array_unshift($parameters, $this);
             return call_user_func_array(array($this->_class_name,'filter_'.$method), $parameters);
         }
+        elseif(method_exists($this, $name)){
+            return call_user_func_array(array($this, $name), $parameters);
+        }
         else {
-            throw new Exception(" no static $method found or static method 'filter_$method' not defined in ".$this->_class_name);
+            throw new Exception ("No static $method/$name found or static method 'filter_$method' not defined in ".$this->_class_name);
         }
     }
 }
