@@ -2,7 +2,7 @@
 
 use Granada\ORM;
 use Granada\Eager;
-use Exception;
+use BadMethodCallException;
 
 /**
  * Subclass of Idiorm's ORM class that supports
@@ -299,7 +299,7 @@ class Wrapper extends ORM {
      *
      * @param  string $method
      * @param  array  $parameters
-     * @throws Exception
+     * @throws BadMethodCallException
      * @return bool|Wrapper
      */
     public function __call($method, $parameters) {
@@ -313,7 +313,7 @@ class Wrapper extends ORM {
             return call_user_func_array(array($this, $name), $parameters);
         }
         else {
-            throw new Exception ("No static $method/$name found or static method 'filter_$method' not defined in ".$this->_class_name);
+            throw new BadMethodCallException ("No static $method/$name found or static method 'filter_$method' not defined in ".$this->_class_name);
         }
     }
 }
